@@ -35,10 +35,12 @@ const char* HELP_STR = "! to quit\n? for help\n/ to skip word\n";
 bool letters[LETTERS_IN_ALPHABET];
 
 int maxWordChars = 25;
-int minWordChars = 4;
+int minWordChars = 1;
 int maxWords = 20000;
+
 char* wordFileName = NULL;
 char** words = NULL;
+
 int nof_words = 0;
 int max_fail = 10;
 
@@ -47,8 +49,10 @@ int main(int argc, char** argv) {
     if (argRet)
         return argRet;
     
-    // main loop
-    
+    if (wordFileName == NULL) {
+        fprintf(stderr, USE_STR);
+        return 1;
+    }
     FILE* wordFile = fopen(wordFileName, "r");
     if (!wordFile) {
         printdbg(stdout, "File could not be read: %s", wordFileName);
@@ -56,6 +60,11 @@ int main(int argc, char** argv) {
     }
     words = readWords(wordFile, minWordChars, maxWordChars, maxWords, &nof_words);
     fclose(wordFile);
+    
+    if (nof_words < 1) {
+        fprintf(stderr, "No words matching the filter criteria were found.\n");
+        return 2;
+    }
     
     printf("=== %d words read ===\n%s", nof_words, HELP_STR);
     
