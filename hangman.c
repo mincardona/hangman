@@ -21,7 +21,13 @@ int getLettersLeft(const char* word, const bool* mask);
 int getln_s(char* stor, int max);
 int getNofCorrect(const bool* mask);
 
-#define printdbg(...) fprintf(__VA_ARGS__)
+#define DEBUG
+
+#ifdef DEBUG
+    #define printdbg(...) fprintf(__VA_ARGS__)
+#else
+    #define printdbg(...) ;
+#endif
 
 #define GUESS_CORRECT 0
 #define GUESS_WRONG 1
@@ -29,8 +35,8 @@ int getNofCorrect(const bool* mask);
 
 #define LETTERS_IN_ALPHABET 26
 
-const char* USE_STR = "hangman -d dictionaryfile [-n minimum_letters] [-x maximum_letters]\n";
-const char* HELP_STR = "! to quit\n? for help\n/ to skip word\n";
+#define USE_STR "hangman -d dictionaryfile [-n minimum_letters] [-x maximum_letters]\n"
+#define HELP_STR "! to quit\n? for help\n/ to skip word\n"
 
 bool letters[LETTERS_IN_ALPHABET];
 
@@ -123,6 +129,11 @@ int main(int argc, char** argv) {
                     break;
                 }
             }
+            #ifdef DEBUG
+            else if (prompt[0] == '&') {
+                puts(words[wi]);
+            }
+            #endif
             puts("");
         }
         
