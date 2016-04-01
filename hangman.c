@@ -21,6 +21,8 @@ int getLettersLeft(const char* word, const bool* mask);
 int getln_s(char* stor, int max);
 int getNofCorrect(const bool* mask);
 
+int execCommand(const char* cmd);
+
 #define DEBUG
 
 #ifdef DEBUG
@@ -38,17 +40,20 @@ int getNofCorrect(const bool* mask);
 #define USE_STR "hangman -d dictionaryfile [-n minimum_letters] [-x maximum_letters]\n"
 #define HELP_STR "! to quit\n? for help\n/ to skip word\n"
 
-bool letters[LETTERS_IN_ALPHABET];
+static bool letters[LETTERS_IN_ALPHABET];
 
-int maxWordChars = 25;
-int minWordChars = 1;
-int maxWords = 20000;
+static int maxWordChars = 25;
+static int minWordChars = 1;
+static int maxWords = 20000;
 
 char* wordFileName = NULL;
 char** words = NULL;
 
-int nof_words = 0;
-int max_fail = 10;
+static int nof_words = 0;
+static int max_fail = 10;
+
+static int wi = 0;
+static int failed = 0;
 
 int main(int argc, char** argv) {
     int argRet = getArgs(argc, argv);
@@ -83,9 +88,9 @@ int main(int argc, char** argv) {
     
     while(!quit) {
         bool fail = false;
-        int failed = 0;
+        failed = 0;
         clearLetters();
-        int wi = getRand(nof_words);
+        wi = getRand(nof_words);
         while (getLettersLeft(words[wi], letters) && !quit && !fail) {
             printf("??? ");
             printWordMasked(words[wi], letters);
@@ -100,7 +105,7 @@ int main(int argc, char** argv) {
                 break;
             } else if (prompt[0] == '?') {
                 printf("\n%s\n", HELP_STR);
-            } else if (prompt[0] == '/') {
+            } else if (prompt[0] == '\\') {
                 fail = true;
                 break;
             } else if (prompt_len == 1 && isalpha(prompt[0])) {
@@ -128,18 +133,14 @@ int main(int argc, char** argv) {
                     fail = true;
                     break;
                 }
+            } else if (prompt[0] == '/') {
+                if (execCommand(prompt+1) == -1) {
+                    puts("ERR: Unknown command");
+                }
             }
-            #ifdef DEBUG
-            else if (prompt[0] == '&') {
-                puts(words[wi]);
-            }
-            #endif
             puts("");
         }
         
-        // incorporate jackpot guess?
-        // int correct = getNofCorrect(letters);
-        // printf("Stats: %d guesses, with %d incorrect\n", failed + correct, failed);
         if (fail) {
             printf("Sorry, you missed that one. Here\'s another:\n\n\n");
         } else if (!quit) {
@@ -150,6 +151,32 @@ int main(int argc, char** argv) {
     arrFree(words, nof_words);
     
     return 0;
+}
+
+int execCommand(const char* cmd) {
+    if (!strcmp(cmd, "debug")) {
+        printf("\n~~~ DEBUG ~~~\n");
+        printf("max nof words: %d\n"
+               "nof words: %d\n"
+                
+               "min chars: %d\n"
+               "max chars: %d\n"
+                
+               "word file: %s\n"
+               "word index: %d\n"
+                
+               "current word: %s\n"
+               "current word chars: %zu\n"
+               "nof failed guesses: %d\n",
+
+                maxWords, nof_words,
+                minWordChars, maxWordChars,
+                wordFileName, wi,
+                words[wi], strlen(words[wi]), failed
+                );
+                return 0;
+    }
+    return -1;
 }
 
 int guess(char* word, char c) {
