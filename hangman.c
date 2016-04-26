@@ -5,22 +5,16 @@
 #include <stdbool.h>
 #include <time.h>
 
-char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words, int* nof_words);
-char* readlnwht(FILE* f, int min_chars, int max_chars, int* last_char, int* chars_read);
-bool isInt(const char* str, int len);
-int getArgs(int argc, char** argv);
-void arrFree(char** arr, int n);
-int getRand(int max);
+#include "hangman_util.h"
 
+char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words, int* nof_words);
+int getArgs(int argc, char** argv);
 int guess(char* word, char c);
-int getRand(int max);
 void clearLetters();
 void printWordMasked(const char* word, const bool* mask);
 void printLettersGuessed(const bool* mask);
 int getLettersLeft(const char* word, const bool* mask);
-int getln_s(char* stor, int max);
 int getNofCorrect(const bool* mask);
-
 int execCommand(const char* cmd);
 
 #define DEBUG
@@ -38,7 +32,7 @@ int execCommand(const char* cmd);
 #define LETTERS_IN_ALPHABET 26
 
 #define USE_STR "hangman -d dictionaryfile [-n minimum_letters] [-x maximum_letters]\n"
-#define HELP_STR "! to quit\n? for help\n/ to skip word\n"
+#define HELP_STR "! to quit\n? for help\n\\ to skip word\n"
 
 static bool letters[LETTERS_IN_ALPHABET];
 
@@ -172,9 +166,8 @@ int execCommand(const char* cmd) {
                 maxWords, nof_words,
                 minWordChars, maxWordChars,
                 wordFileName, wi,
-                words[wi], strlen(words[wi]), failed
-                );
-                return 0;
+                words[wi], strlen(words[wi]), failed );
+        return 0;
     }
     return -1;
 }
@@ -191,10 +184,6 @@ int guess(char* word, char c) {
     return GUESS_WRONG;
 }
 
-int getRand(int max) {
-    return rand() % max;
-}
-
 void clearLetters() {
     for (int i = 0; i < LETTERS_IN_ALPHABET; i++)
         letters[i] = false;
@@ -202,42 +191,41 @@ void clearLetters() {
 
 // all in word must be a-z
 void printWordMasked(const char* word, const bool* mask) {
-    for(; *word; word++)
-        if (mask[*word - 'a'])
+    for(; *word; word++) {
+        if (mask[*word - 'a']) {
             putchar(*word);
-        else
+        } else {
             putchar('-');
+        }
+    }
 }
 
 void printLettersGuessed(const bool* mask) {
-    for (int i = 0; i < LETTERS_IN_ALPHABET; i++)
-        if (mask[i])
+    for (int i = 0; i < LETTERS_IN_ALPHABET; i++) {
+        if (mask[i]) {
             putchar('a' + i);
+        }
+    }
 }
 
 int getLettersLeft(const char* word, const bool* mask) {
     int ret = 0;
-    for(; *word; word++)
-        if (!mask[*word - 'a'])
+    for(; *word; word++) {
+        if (!mask[*word - 'a']) {
             ret++;
+        }
+    }
     return ret;
 }
 
 int getNofCorrect(const bool* mask) {
     int ret = 0;
-    for (int i = 0; i < LETTERS_IN_ALPHABET; i++)
-        if (mask[i])
+    for (int i = 0; i < LETTERS_IN_ALPHABET; i++) {
+        if (mask[i]) {
             ret++;
+        }
+    }
     return ret;
-}
-
-void arrFree(char** arr, int n) {
-    if (!arr)
-        return;
-    for (n--; n >= 0; n--)
-    // free the array pointer
-        free(arr[n]);
-    free(arr);
 }
 
 char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words, int* nof_words) {
@@ -250,7 +238,6 @@ char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words,
     
     while (*nof_words < max_words) {
         str = readlnwht(f, min_word_chars, max_word_chars, &c, &chars_read);
-        
         if (str) {
             (*nof_words)++;
             if (buf_siz < *nof_words) {
@@ -264,57 +251,6 @@ char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words,
     }
     
     return realloc(buf, *nof_words * sizeof(char*));
-}
-
-char* readlnwht(FILE* f, int min_chars, int max_chars, int* last_char, int* chars_read) {
-    // read a character
-    // if the character is whitespace, skip it
-    // if the character is EOF or \n, end loop
-    // if the character count has been reached, skip it
-    // increment the character counter
-    // if the buffer size is less than or equal to the char counter, double it
-    // write the character to [char counter - 1]
-    *chars_read = 0;
-    int buf_siz = 10;
-    char* str = malloc(buf_siz);
-    int c;
-    bool fr = false;
-    
-    for (;;) {
-        c = getc(f);
-        if (c == EOF || c == '\n' || c == '\r' || c == '\0' ) {
-            break;
-        } else if (*chars_read == max_chars) {
-            fr = true;
-            continue;
-        } else if (isspace(c)) {
-            continue;
-        } else if (!isalpha(c)) {
-            break;
-        }
-        (*chars_read)++;
-        if (buf_siz <= *chars_read)
-            str = realloc(str, buf_siz *= 2);
-        str[*chars_read - 1] = c;
-    }
-    *last_char = c;
-    if (fr || *chars_read < min_chars) {
-        free(str);
-        return NULL;
-    }
-    str[*chars_read] = '\0';
-    return realloc(str, *chars_read + 1);
-}
-
-int getln_s(char* stor, int max) {
-    int c;
-    int i = 0;
-    while ((c = getchar()) != EOF && c != '\n' && c != '\0') {
-        if (i < max && !isspace(c))
-            stor[i++] = c;
-    }
-    stor[i] = '\0';
-    return i;
 }
 
 int getArgs(int argc, char** argv) {
@@ -377,17 +313,4 @@ int getArgs(int argc, char** argv) {
     }
     
     return 0;
-}
-
-bool isInt(const char* str, int len) {
-    bool hadDigit = false;
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '-' || str[i] == '+')
-            if (i != 0)
-                return false;
-        if (!isdigit(str[i]))
-            return false;
-        hadDigit = true;
-    }
-    return hadDigit;
 }

@@ -4,7 +4,7 @@ CC = gcc
 # compiler flags
 CFLAGS = -g -O2 -std=c99 -pedantic -Wall
 # all object files to link (src file name with .o extension)
-OBJECTS = hangman.o
+OBJECTS = hangman.o hangman_util.o
 # program executable and main file name (with extension)
 PRGM = hangman.exe
 # libraries to link with
@@ -14,7 +14,7 @@ LIBS =
 all: $(PRGM)
 
 # compiles the main program
-$(PRGM) : $(OBJECTS)
+$(PRGM) : $(OBJECTS) %.h
 	$(CC) $(CFLAGS) -o $(PRGM) $(OBJECTS) $(LIBS)
 	
 # % is a wildcard for compiling all files
@@ -23,6 +23,8 @@ $(PRGM) : $(OBJECTS)
 # so, this produces object files from all source files based on their dependencies
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
+
+%.h : 
 	
 clean:
 	rm *.o
