@@ -34,7 +34,7 @@ bool isInt(const char* str, int len);
 char* readlnwht(FILE* f, int min_chars, int max_chars, int* last_char, int* chars_read);
 
 /**
- *  Reads a line from standard input.
+ *  Reads a line from standard input. Whitespace characters are ignored.
  *  Characters beyond the buffer maximum but before the end of the line are eaten.
  *  
  *  param stor = pointer to a buffer to store the string in

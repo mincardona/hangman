@@ -7,14 +7,18 @@
 bool isInt(const char* str, int len) {
     bool hadDigit = false;
     for (int i = 0; i < len; i++) {
+        // a sign is valid, but only as the first character
         if (str[i] == '-' || str[i] == '+') {
             if (i != 0) {
                 return false;
             }
+            continue;   // skip the digit check
         }
+        // if the character isn't a sign, it should be a digit
         if (!isdigit(str[i])) {
             return false;
         }
+        // at least one digit is required
         hadDigit = true;
     }
     return hadDigit;
@@ -77,9 +81,10 @@ void arrFree(char** arr, int n) {
         return;
     }
     for (n--; n >= 0; n--) {
-        // free the array pointer
+        // free the pointer-to array elements
         free(arr[n]);
     }
+    // free the array itself
     free(arr);
 }
 
