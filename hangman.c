@@ -39,7 +39,7 @@ const char* USE_STR = "hangman "
 const char* HELP_STR = "! to quit\n"
                        "? for help\n"
                        "\\ to skip word\n"
-                       "=finalguess to guess 'finalguess' as entire word\n";
+                       "= to guess entire word\n";
 
 static bool letters[LETTERS_IN_ALPHABET];
 
