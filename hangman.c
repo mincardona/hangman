@@ -31,8 +31,15 @@ int execCommand(const char* cmd);
 
 #define LETTERS_IN_ALPHABET 26
 
-#define USE_STR "hangman -d dictionaryfile [-n minimum_letters] [-x maximum_letters]\n"
-#define HELP_STR "! to quit\n? for help\n\\ to skip word\n"
+const char* USE_STR = "hangman "
+                      "-d dictionaryfile "
+                      "[-n minimum_letters] "
+                      "[-x maximum_letters] "
+                      "[-p]\n";
+const char* HELP_STR = "! to quit\n"
+                       "? for help\n"
+                       "\\ to skip word\n"
+                       "=finalguess to guess 'finalguess' as entire word\n";
 
 static bool letters[LETTERS_IN_ALPHABET];
 
@@ -40,11 +47,12 @@ static int maxWordChars = 25;
 static int minWordChars = 1;
 static int maxWords = 20000;
 
-char* wordFileName = NULL;
-char** words = NULL;
-
 static int nof_words = 0;
 static int max_fail = 10;
+static int print_on_fail = false;
+
+char* wordFileName = NULL;
+char** words = NULL;
 
 static int wi = 0;
 static int failed = 0;
@@ -55,7 +63,7 @@ int main(int argc, char** argv) {
         return argRet;
     
     if (wordFileName == NULL) {
-        fprintf(stderr, USE_STR);
+        fprintf(stderr, "%s", USE_STR);
         return 1;
     }
     FILE* wordFile = fopen(wordFileName, "r");
@@ -88,7 +96,7 @@ int main(int argc, char** argv) {
         while (getLettersLeft(words[wi], letters) && !quit && !fail) {
             printf("??? ");
             printWordMasked(words[wi], letters);
-            printf(" ???\n(%d/%d) ", failed, max_fail);
+            printf(" ???\n(%d/%d) ", max_fail - failed, max_fail);
             printLettersGuessed(letters);
             printf("\n> ");
             int prompt_len = getln_s(prompt, 25-1);
@@ -136,9 +144,13 @@ int main(int argc, char** argv) {
         }
         
         if (fail) {
-            printf("Sorry, you missed that one. Here\'s another:\n\n\n");
+            printf("Sorry, you missed that one.");
+            if (print_on_fail) {
+                printf("\nThe word was \"%s\".", words[wi]);
+            }
+            printf(" Here\'s another:\n\n\n");
         } else if (!quit) {
-            printf("The word was \"%s\"\n\n\n", words[wi]);
+            printf("The word was \"%s\".\n\n\n", words[wi]);
         }
     }
     
@@ -174,8 +186,9 @@ int execCommand(const char* cmd) {
 
 int guess(char* word, char c) {
     int reg = c - 'a';
-    if (letters[reg])
+    if (letters[reg]) {
         return GUESS_ALREADY;
+    }
     int pre = getLettersLeft(word, letters);
     letters[reg] = true;
     if (getLettersLeft(word, letters) - pre) {
@@ -246,8 +259,9 @@ char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words,
             buf[*nof_words-1] = str;
         }
         
-        if (c == EOF)
+        if (c == EOF) {
             break;
+        }
     }
     
     return realloc(buf, *nof_words * sizeof(char*));
@@ -255,7 +269,7 @@ char** readWords(FILE* f, int min_word_chars, int max_word_chars, int max_words,
 
 int getArgs(int argc, char** argv) {
     if (argc < 2) {
-        fprintf(stderr, USE_STR);
+        fprintf(stderr, "%s", USE_STR);
         return 1;
     }
     
@@ -296,6 +310,8 @@ int getArgs(int argc, char** argv) {
                 break;
             }
             wordFileName = argv[i];
+        } else if (!strcmp(argv[i], "-p")) {
+            print_on_fail = true;
         } else {
             argError = true;
             fprintf(stderr, "Unrecognized command option: \"%s\"\n", argv[i]);

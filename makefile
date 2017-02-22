@@ -6,7 +6,7 @@ CFLAGS = -g -O2 -std=c99 -pedantic -Wall
 # all object files to link (src file name with .o extension)
 OBJECTS = hangman.o hangman_util.o
 # program executable and main file name (with extension)
-PRGM = hangman.exe
+PRGM = hangman
 # libraries to link with
 # use -l prefex, e.g. -lmylibrary
 LIBS = 
@@ -28,4 +28,4 @@ $(PRGM) : $(OBJECTS) %.h
 	
 clean:
 	rm *.o
-	
+
